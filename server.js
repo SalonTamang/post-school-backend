@@ -48,7 +48,7 @@ const url = dbPprefix + dbUsername + ":" + dbPwd + dbUrl + dbParams;
 
 const { MongoClient, ServerApiVersion } = require("mongodb");
 const client = new MongoClient(url, { serverApi: ServerApiVersion.v1 });
-const port = 4000;
+const port =  process.env.PORT || 4000;
 
 const startServer = async (collectionName) => {
     try {
@@ -124,6 +124,18 @@ app.post('/collections/:collectionName', express.json(), async (req, res) => {
     } else {
         res.status(400).send('Invalid collection name');
     }
+});
+
+app.get('/:collectionName/search', async (req, res) => {
+    const query = req.query.q;
+    const results = await req.collection.find({
+        $or: [
+            { title: { $regex: new RegExp(query, 'i') } },
+            { location: {$regex: new RegExp(query, 'i') }}
+        ]
+    }).toArray();
+  
+    res.json(results);
 });
 
 
