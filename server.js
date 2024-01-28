@@ -113,16 +113,12 @@ app.put('/collections/:collectionName', express.json(), async (req, res) => {
 
 //adds a new order to the database
 app.post('/collections/:collectionName', express.json(), async (req, res) => {
-    if(req.params.collectionName === 'orders'){
-        try {
-            const result = await req.collection.insertOne(req.body);
-            res.json(result);
-        } catch (err) {
-            console.error('Error occurred while adding new order...\n', err);
-            res.status(500).send('Error occurred while adding new order');
-        }
-    } else {
-        res.status(400).send('Invalid collection name');
+    try {
+        const result = await req.collection.insertOne(req.body);
+        res.json(result);
+    } catch (err) {
+        console.error('Error occurred while adding new order...\n', err);
+        res.status(500).send('Error occurred while adding new order');
     }
 });
 
@@ -136,6 +132,23 @@ app.get('/:collectionName/search', async (req, res) => {
     }).toArray();
   
     res.json(results);
+});
+
+//deletes a lesson from the database using the lesson id
+app.delete('/collections/:collectionName/:id', async (req, res, next) => {
+    try {
+        let id = req.params.id;
+        id = parseInt(id);
+        const result = await req.collection.deleteOne({ id: id });
+        if (result.deletedCount === 1) {
+            res.json({ message: 'Successfully deleted', id });
+        } else {
+            res.json({ message: 'No lesson found with this ID', id });
+        }
+    } catch (err) {
+        console.error(err);
+        return next(err);
+    }
 });
 
 
